@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "229316795955",
+    "project_id": "reborn-d3998",
+    "storage_bucket": "reborn-d3998.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:229316795955:android:d527cae5a47aa685834d46",
+        "android_client_info": {
+          "package_name": "com.dev.reborn"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB5ExfniK1DBQ58H5zSBaK6OC9W2TOMa4A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:229316795955:android:ae84798eab157992834d46",
+        "android_client_info": {
+          "package_name": "com.reborn"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB5ExfniK1DBQ58H5zSBaK6OC9W2TOMa4A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
