@@ -8,7 +8,7 @@ import styled from 'styled-components/native';
 import colors from '../../constants/colors';
 import PlusIcon from '../../assets/images/others/add.svg';
 import RibbonIcon from '../../assets/images/others/ribbon_black.svg';
-import {ProfileImages} from './ProfileImages';
+import AnimalImages from '../../components/AnimalImages';
 
 const {width, height} = Dimensions.get('window');
 
@@ -55,7 +55,7 @@ const PetProfileList = ({navigation: {navigate}}) => {
         keyExtractor={item => item.id.toString()}
         renderItem={({item}) => {
           const imageSrc =
-            ProfileImages[item.petCase]?.[item.color] ??
+            AnimalImages[item.petCase]?.[item.color]?.profile ??
             require('../../assets/images/pets/dog/white/dog_profile.png');
 
           return (

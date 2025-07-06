@@ -1,7 +1,7 @@
 import React from 'react';
 import {Dimensions} from 'react-native';
 import styled from 'styled-components/native';
-import animalImages from './animalImages';
+import AnimalImages from '../../components/AnimalImages';
 import {useReborn} from './../../context/RebornContext';
 
 import ThinkSrc3 from './../../assets/images/others/think1.png';
@@ -28,8 +28,8 @@ const Animal = ({
   onPress3,
   whatContents = 'contents',
 }) => {
-  const AnimalSrc = animalImages?.[animalType]?.[animalColor]?.[animalAction];
-  const AnimalFaceSrc = animalImages?.[animalType]?.[animalColor]?.face;
+  const AnimalSrc = AnimalImages?.[animalType]?.[animalColor]?.[animalAction];
+  const AnimalFaceSrc = AnimalImages?.[animalType]?.[animalColor]?.face;
 
   const {isFeed, isSnack, isWalk} = useReborn();
 

@@ -4,7 +4,7 @@ import {CommonActions} from '@react-navigation/native';
 import {Image, Dimensions} from 'react-native';
 import styled from 'styled-components';
 import colors from '../../constants/colors';
-import {ProfileImages} from './ProfileImages';
+import AnimalImages from '../../components/AnimalImages';
 import BookmarkYellow from '../../assets/images/others/bookmark_yellow.svg';
 import BookmarkBlack from '../../assets/images/others/bookmark_black.svg';
 import RibbonIcon from '../../assets/images/others/ribbon_black.svg';
@@ -53,7 +53,7 @@ const ReviewHome = ({navigation}) => {
   if (!petInfo) return null;
 
   const {name, petCase, color, death, farewellId} = petInfo;
-  const profileImg = ProfileImages[petCase]?.[color];
+  const profileImg = AnimalImages[petCase]?.[color]?.profile;
 
   return (
     <Container>

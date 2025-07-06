@@ -1,12 +1,12 @@
 import React from 'react';
 import {Dimensions} from 'react-native';
 import styled from 'styled-components/native';
-import {FaceImages} from './AnimalImages';
+import AnimalImages from '../../components/AnimalImages';
 
 const {width, height} = Dimensions.get('window');
 
 const AnimalFace = ({animalType, animalColor}) => {
-  const AnimalSrc = FaceImages?.[animalType]?.[animalColor];
+  const AnimalSrc = AnimalImages?.[animalType]?.[animalColor]?.face;
 
   return (
     <Container>

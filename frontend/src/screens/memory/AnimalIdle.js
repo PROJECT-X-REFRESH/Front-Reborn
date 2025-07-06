@@ -1,12 +1,12 @@
 import React from 'react';
 import {Dimensions} from 'react-native';
 import styled from 'styled-components/native';
-import {IdleImages} from './AnimalImages';
+import AnimalImages from '../../components/AnimalImages';
 
 const {width, height} = Dimensions.get('window');
 
 const AnimalIdle = ({animalType, animalColor}) => {
-  const AnimalSrc = IdleImages?.[animalType]?.[animalColor];
+  const AnimalSrc = AnimalImages?.[animalType]?.[animalColor]?.idle;
 
   return (
     <Container>
