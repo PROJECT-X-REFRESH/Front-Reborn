@@ -21,7 +21,7 @@ import MemoryBox from './item/MemoryBox';
 import FarewallBox from './item/FarewallBox';
 import ModalPetItem from './item/ModalPetItem';
 import RibbonBlackIcon from '../../assets/images/others/ribbon_black.svg';
-import { ProfileImages } from './ProfileImages';
+import AnimalImages from '../../components/AnimalImages';
 
 import { get } from '../../services/api';
 import config from '../../constants/config';
@@ -76,7 +76,7 @@ const HomeScreen = ({ navigation }) => {
             color: pet.color,
             todayRemind: pet.todayRemind,
             todayRecord: pet.todayRecord,
-            image: ProfileImages[pet.petCase]?.[pet.color],
+            image: AnimalImages[pet.petCase]?.[pet.color]?.profile,
           }));
 
           setUserName(res.result.name);
