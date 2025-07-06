@@ -9,7 +9,7 @@ import {useReborn} from './../../context/RebornContext';
 import {AnimatedCircularProgress} from 'react-native-circular-progress';
 import ToastMessage from '../../components/ToastMessage';
 import {startCounter, stopCounter} from 'react-native-accurate-step-counter';
-import animalImages from './animalImages';
+import AnimalImages from '../../components/AnimalImages';
 
 import {patch} from '../../services/api';
 import config from '../../constants/config';
@@ -97,7 +97,7 @@ const WalkScreen = ({navigation}) => {
   }, []);
 
   const bgImage = require('./../../assets/images/backgrounds/bg_walk.png');
-  const animalHeadImage = animalImages?.[petCase]?.[petColor]?.face;
+  const animalHeadImage = AnimalImages?.[petCase]?.[petColor]?.face;
 
   return (
     <Container>
