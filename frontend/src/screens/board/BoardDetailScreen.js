@@ -140,7 +140,16 @@ const BoardDetailScreen = ({ route, navigation }) => {
                 try {
                   await del(config.BOARD.DELETE(boardId));
                   setMenuVisible(false);
-                  navigation.goBack();
+                  navigation.reset({
+                    index: 0,
+                    routes: [
+                      {
+                        name: 'BoardListScreen',
+                        params: { category },
+                        key: `BoardListScreen-${category}`,
+                      },
+                    ],
+                  });
                 } catch {
                   Alert.alert('권한 없음', '게시글 삭제는 작성자만 가능합니다.');
                 }
