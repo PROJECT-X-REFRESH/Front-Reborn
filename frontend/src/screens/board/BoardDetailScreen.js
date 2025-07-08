@@ -1,7 +1,8 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  View,
   Dimensions,
-  FlatList,
+  ScrollView,
   KeyboardAvoidingView,
   Platform,
   Keyboard,
@@ -12,7 +13,7 @@ import {
   Alert,
   SafeAreaView,
 } from 'react-native';
-import {put, del} from '../../services/api';
+import { put, del } from '../../services/api';
 import config from '../../constants/config';
 import styled from 'styled-components/native';
 import colors from '../../constants/colors';
@@ -32,10 +33,10 @@ import {
   toggleBoardLike,
 } from '../../services/boardapi';
 
-const {width, height} = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
-const BoardDetailScreen = ({route, navigation}) => {
-  const {boardId, category = 'POST'} = route.params || {};
+const BoardDetailScreen = ({ route, navigation }) => {
+  const { boardId, category = 'POST' } = route.params || {};
 
   const [boardWriter, setBoardWriter] = useState('');
   const [boardCreatedAt, setBoardCreatedAt] = useState('');
@@ -49,14 +50,13 @@ const BoardDetailScreen = ({route, navigation}) => {
   const [loading, setLoading] = useState(true);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
+  const [imageHeight, setImageHeight] = useState(width * 0.88);
 
   useEffect(() => {
     const loadBoardDetail = async () => {
       try {
         const detail = await fetchBoardDetail(boardId);
-        const formattedTime = detail.createdAt
-          ? detail.createdAt.substring(0, 16).replace('T', ' ')
-          : '';
+        const formattedTime = detail.createdAt?.substring(0, 16).replace('T', ' ') || '';
         setBoardWriter(detail.writerName);
         setBoardCreatedAt(formattedTime);
         setOriginalContent(detail.content);
@@ -64,6 +64,22 @@ const BoardDetailScreen = ({route, navigation}) => {
         setLiked(detail.like);
         setBoardImage(detail.attachImg || null);
         setProfileImage(detail.writerProfileImage || null);
+
+        // 이미지가 있으면 크기 미리 계산
+        if (detail.attachImg) {
+          const { Image } = require('react-native');
+          Image.getSize(
+            detail.attachImg,
+            (imgWidth, imgHeight) => {
+              const aspectRatio = imgHeight / imgWidth;
+              const calculatedHeight = (width * 0.88) * aspectRatio;
+              setImageHeight(Math.min(calculatedHeight, width * 0.88));
+            },
+            () => {
+              setImageHeight(width * 0.88);
+            }
+          );
+        }
       } catch {
         Alert.alert('오류', '게시글을 불러오는 중 문제가 발생했습니다.');
       } finally {
@@ -74,15 +90,13 @@ const BoardDetailScreen = ({route, navigation}) => {
     const loadComments = async () => {
       try {
         const commentData = await fetchComments(boardId);
-        setComments(
-          commentData.map(c => ({
-            id: String(c.id),
-            user: c.commentWriter,
-            time: c.createdAt.substring(0, 16).replace('T', ' '),
-            text: c.contents,
-            profileImage: c.writerProfileImage,
-          })),
-        );
+        setComments(commentData.map(c => ({
+          id: String(c.id),
+          user: c.commentWriter,
+          time: c.createdAt.substring(0, 16).replace('T', ' '),
+          text: c.contents,
+          profileImage: c.writerProfileImage,
+        })));
       } catch {
         Alert.alert('오류', '댓글을 불러오는 중 문제가 발생했습니다.');
       }
@@ -94,20 +108,12 @@ const BoardDetailScreen = ({route, navigation}) => {
 
   const handleEdit = async () => {
     try {
-      await put(config.BOARD.UPDATE(boardId), {
-        category,
-        content: editedContent,
-      });
+      await put(config.BOARD.UPDATE(boardId), { category, content: editedContent });
       setOriginalContent(editedContent);
       setIsEditing(false);
     } catch {
       Alert.alert('권한 없음', '게시글 수정은 작성자만 가능합니다.');
     }
-  };
-
-  const handleCancelEdit = () => {
-    setEditedContent(originalContent);
-    setIsEditing(false);
   };
 
   const handleCreateComment = async () => {
@@ -117,15 +123,13 @@ const BoardDetailScreen = ({route, navigation}) => {
       setNewComment('');
       Keyboard.dismiss();
       const updated = await fetchComments(boardId);
-      setComments(
-        updated.map(c => ({
-          id: String(c.id),
-          user: c.commentWriter,
-          time: c.createdAt.substring(0, 16).replace('T', ' '),
-          text: c.contents,
-          profileImage: c.writerProfileImage,
-        })),
-      );
+      setComments(updated.map(c => ({
+        id: String(c.id),
+        user: c.commentWriter,
+        time: c.createdAt.substring(0, 16).replace('T', ' '),
+        text: c.contents,
+        profileImage: c.writerProfileImage,
+      })));
     } catch {
       Alert.alert('오류', '댓글 작성에 실패했습니다.');
     }
@@ -140,22 +144,14 @@ const BoardDetailScreen = ({route, navigation}) => {
     }
   };
 
-  const renderItem = ({item}) => (
-    <CommentItem
-      user={item.user}
-      time={item.time}
-      text={item.text}
-      profileImage={item.profileImage}
-      onDelete={async () => {
-        try {
-          await deleteComment(item.id);
-          setComments(prev => prev.filter(c => c.id !== item.id));
-        } catch {
-          Alert.alert('권한 없음', '댓글 삭제는 작성자만 가능합니다.');
-        }
-      }}
-    />
-  );
+  const handleDeleteComment = async (commentId) => {
+    try {
+      await deleteComment(commentId);
+      setComments(prev => prev.filter(c => c.id !== commentId));
+    } catch {
+      Alert.alert('권한 없음', '댓글 삭제는 작성자만 가능합니다.');
+    }
+  };
 
   if (loading) {
     return (
@@ -166,94 +162,117 @@ const BoardDetailScreen = ({route, navigation}) => {
   }
 
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor: colors.white}}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.white }}>
       <KeyboardAvoidingView
-        style={{flex: 1}}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <Container style={{flex: 1}}>
-            <FlatList
-              data={comments}
-              keyExtractor={item => item.id}
-              renderItem={renderItem}
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{paddingBottom: 120}}
-              ListHeaderComponent={
-                <>
-                  <Header>
-                    <ProfileImageContainer>
-                      {profileImage ? (
-                        <ProfilePhoto source={{uri: profileImage}} />
-                      ) : (
-                        <ProfileIcon width={width * 0.05} />
-                      )}
-                    </ProfileImageContainer>
-                    <UserInfo>
-                      <UserName>{boardWriter}</UserName>
-                      <PostMeta>{boardCreatedAt}</PostMeta>
-                    </UserInfo>
-                    <TouchableOpacity onPress={() => setMenuVisible(true)}>
-                      <ThreeDotIcon />
-                    </TouchableOpacity>
-                  </Header>
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      >
+        <Container>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}
+            nestedScrollEnabled={false}
+            scrollEnabled={true}
+            bounces={true}
+          >
+            <Header>
+              <ProfileImageContainer>
+                {profileImage ? (
+                  <ProfilePhoto source={{ uri: profileImage }} />
+                ) : (
+                  <ProfileIcon width={width * 0.05} />
+                )}
+              </ProfileImageContainer>
+              <UserInfo>
+                <UserName>{boardWriter}</UserName>
+                <PostMeta>{boardCreatedAt}</PostMeta>
+              </UserInfo>
+              <TouchableOpacity onPress={() => setMenuVisible(true)}>
+                <ThreeDotIcon />
+              </TouchableOpacity>
+            </Header>
 
-                  {isEditing ? (
-                    <>
-                      <PostInput
-                        value={editedContent}
-                        onChangeText={setEditedContent}
-                        multiline
-                        blurOnSubmit={false}
-                        textAlignVertical="top"
-                        placeholder="내용을 입력하세요"
-                      />
-                      <EditButtonRow>
-                        <EditConfirmButton onPress={handleEdit}>
-                          <EditConfirmText>완료</EditConfirmText>
-                        </EditConfirmButton>
-                        <EditCancelButton onPress={handleCancelEdit}>
-                          <EditCancelText>취소</EditCancelText>
-                        </EditCancelButton>
-                      </EditButtonRow>
-                    </>
-                  ) : (
-                    <PostText>{originalContent}</PostText>
-                  )}
-
-                  {boardImage && <PostImage source={{uri: boardImage}} />}
-
-                  <IconRow>
-                    <TouchableOpacity
-                      onPress={handleToggleLike}
-                      style={{marginRight: 15}}>
-                      {liked ? <HeartFillIcon /> : <HeartEmptyIcon />}
-                    </TouchableOpacity>
-                  </IconRow>
-
-                  <Line />
-                </>
-              }
-              ListHeaderComponentStyle={{flexGrow: 1}}
-            />
-
-            <FixedFooter>
-              <CommentInputRow>
-                <CommentInput
-                  placeholder="댓글을 입력하세요."
-                  placeholderTextColor="#aaa"
+            {isEditing ? (
+              <>
+                <PostInput
+                  value={editedContent}
+                  onChangeText={setEditedContent}
+                  multiline
                   blurOnSubmit={false}
-                  value={newComment}
-                  onChangeText={setNewComment}
+                  textAlignVertical="top"
+                  placeholder="내용을 입력하세요"
+                  scrollEnabled={false}
                 />
-                <SendButton onPress={handleCreateComment}>
-                  <SendIcon width={width * 0.07} />
-                </SendButton>
-              </CommentInputRow>
-            </FixedFooter>
-          </Container>
-        </TouchableWithoutFeedback>
+                <EditButtonRow>
+                  <EditConfirmButton onPress={handleEdit}>
+                    <EditConfirmText>완료</EditConfirmText>
+                  </EditConfirmButton>
+                  <EditCancelButton onPress={() => {
+                    setEditedContent(originalContent);
+                    setIsEditing(false);
+                  }}>
+                    <EditCancelText>취소</EditCancelText>
+                  </EditCancelButton>
+                </EditButtonRow>
+              </>
+            ) : (
+              <PostText>{originalContent}</PostText>
+            )}
+
+            {boardImage && (
+              <PostImageContainer>
+                <PostImage
+                  source={{ uri: boardImage }}
+                  style={{
+                    width: width * 0.88,
+                    height: imageHeight,
+                  }}
+                  resizeMode="cover"
+                />
+              </PostImageContainer>
+            )}
+
+            <IconRow>
+              <TouchableOpacity onPress={handleToggleLike} style={{ marginRight: 15 }}>
+                {liked ? <HeartFillIcon /> : <HeartEmptyIcon />}
+              </TouchableOpacity>
+            </IconRow>
+
+            <Line />
+
+            <CommentsSection>
+              {comments.map((comment) => (
+                <CommentItem
+                  key={comment.id}
+                  user={comment.user}
+                  time={comment.time}
+                  text={comment.text}
+                  profileImage={comment.profileImage}
+                  onDelete={() => handleDeleteComment(comment.id)}
+                />
+              ))}
+            </CommentsSection>
+          </ScrollView>
+
+          <FixedFooter>
+            <CommentInputRow>
+              <CommentInput
+                placeholder="댓글을 입력하세요."
+                placeholderTextColor="#aaa"
+                blurOnSubmit={false}
+                value={newComment}
+                onChangeText={setNewComment}
+                multiline={false}
+                maxLength={200}
+              />
+              <SendButton onPress={handleCreateComment}>
+                <SendIcon width={width * 0.07} />
+              </SendButton>
+            </CommentInputRow>
+          </FixedFooter>
+        </Container>
       </KeyboardAvoidingView>
 
       <Modal
@@ -271,7 +290,7 @@ const BoardDetailScreen = ({route, navigation}) => {
                       '삭제 확인',
                       '정말 이 게시글을 삭제하시겠습니까?',
                       [
-                        {text: '취소', style: 'cancel'},
+                        { text: '취소', style: 'cancel' },
                         {
                           text: '삭제',
                           style: 'destructive',
@@ -368,6 +387,8 @@ const PostInput = styled.TextInput`
   border: 1px solid ${colors.gray200};
   border-radius: 8px;
   padding: 10px;
+  min-height: 100px;
+  max-height: 200px;
 `;
 
 const EditButtonRow = styled.View`
@@ -399,11 +420,14 @@ const EditCancelText = styled.Text`
   font-family: 'NPSfont_bold';
 `;
 
-const PostImage = styled.Image`
+const PostImageContainer = styled.View`
   width: 100%;
-  height: ${width}px;
-  border-radius: 12px;
+  align-items: center;
   margin-bottom: ${width * 0.04}px;
+`;
+
+const PostImage = styled.Image`
+  border-radius: 12px;
 `;
 
 const ProfilePhoto = styled.Image`
@@ -422,6 +446,10 @@ const Line = styled.View`
   margin-vertical: 5%;
 `;
 
+const CommentsSection = styled.View`
+  flex: 1;
+`;
+
 const CommentInputRow = styled.View`
   flex-direction: row;
   align-items: center;
@@ -435,6 +463,7 @@ const CommentInput = styled.TextInput`
   flex: 1;
   font-size: ${width * 0.035}px;
   color: ${colors.brown};
+  max-height: 80px;
 `;
 
 const SendButton = styled.TouchableOpacity`
