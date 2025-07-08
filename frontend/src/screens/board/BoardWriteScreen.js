@@ -76,7 +76,16 @@ const BoardWriteScreen = ({ navigation, route }) => {
 
       if (response.isSuccess) {
         Alert.alert('성공', '게시물이 등록되었습니다.');
-        navigation.goBack();
+        navigation.reset({
+          index: 0,
+          routes: [
+            {
+              name: 'BoardListScreen',
+              params: { category },
+              key: `BoardListScreen-${category}`,
+            },
+          ],
+        });
       } else {
         Alert.alert('실패', response.message || '게시물 등록에 실패했습니다.');
       }
@@ -112,7 +121,7 @@ const BoardWriteScreen = ({ navigation, route }) => {
             multiline
             value={content}
             onChangeText={setContent}
-            placeholderTextColor="#999"
+            placeholderTextColor={colors.gray300}
           />
           {imageUri && <PreviewImage source={{ uri: imageUri }} />}
         </ContentContainer>
@@ -129,8 +138,6 @@ const BoardWriteScreen = ({ navigation, route }) => {
 };
 
 export default BoardWriteScreen;
-
-// Styled Components
 
 const Container = styled.View`
   flex: 1;

@@ -5,9 +5,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import styled from 'styled-components/native';
 
-import BoardScreen from '../screens/board/BoardScreen';
-import ItemBoardScreen from '../screens/board/ItemBoardScreen';
-import VolunteerBoardScreen from '../screens/board/VolunteerBoardScreen';
+import BoardListScreen from '../screens/board/BoardListScreen';
 import BoardDetailScreen from '../screens/board/BoardDetailScreen';
 import BoardWriteScreen from '../screens/board/BoardWriteScreen';
 
@@ -18,7 +16,13 @@ import colors from '../constants/colors';
 const Stack = createNativeStackNavigator();
 const { width, height } = Dimensions.get('window');
 
-const SideMenu = ({ isOpen, onClose, navigate, currentRoute }) => {
+const menuItems = [
+  { label: '담소 나눔 게시판', category: 'POST' },
+  { label: '물건 나눔 게시판', category: 'SHARE' },
+  { label: '봉사 나눔 게시판', category: 'VOLUNTEER' },
+];
+
+const SideMenu = ({ isOpen, onClose, navigate, currentCategory }) => {
   const translateX = useSharedValue(isOpen ? 0 : -width * 0.75);
 
   React.useEffect(() => {
@@ -40,26 +44,21 @@ const SideMenu = ({ isOpen, onClose, navigate, currentRoute }) => {
         </CloseButton>
       </DrawerHeader>
 
-      {[{ label: '담소 나눔 게시판', screen: 'BoardScreen' },
-      { label: '물건 나눔 게시판', screen: 'ItemBoardScreen' },
-      { label: '봉사 나눔 게시판', screen: 'VolunteerBoardScreen' }
-      ].map(({ label, screen }, index, arr) => {
-        const isActive = currentRoute === screen;
+      {menuItems.map(({ label, category }) => {
+        const isActive = currentCategory === category;
         return (
-          <React.Fragment key={screen}>
-            <DrawerItemButton
-              style={{ backgroundColor: isActive ? colors.gray100 : colors.white }}
-              onPress={() => {
-                navigate(screen);
-                onClose();
-              }}
-            >
-              <DrawerItemLabel style={{ color: isActive ? colors.brown : colors.gray400 }}>
-                {label}
-              </DrawerItemLabel>
-            </DrawerItemButton>
-            {screen === 'VolunteerBoardScreen' && index !== arr.length - 1 && <Divider />}
-          </React.Fragment>
+          <DrawerItemButton
+            key={category}
+            style={{ backgroundColor: isActive ? colors.gray100 : colors.white }}
+            onPress={() => {
+              navigate('BoardListScreen', { category });
+              onClose();
+            }}
+          >
+            <DrawerItemLabel style={{ color: isActive ? colors.brown : colors.gray400 }}>
+              {label}
+            </DrawerItemLabel>
+          </DrawerItemButton>
         );
       })}
     </Animated.View>
@@ -68,17 +67,13 @@ const SideMenu = ({ isOpen, onClose, navigate, currentRoute }) => {
 
 const BoardStackNavigator = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [currentRoute, setCurrentRoute] = useState('BoardScreen');
+  const [currentCategory, setCurrentCategory] = useState('POST');
   const navRef = useRef();
   const overlayOpacity = useSharedValue(0);
 
   React.useEffect(() => {
     overlayOpacity.value = withTiming(menuOpen ? 1 : 0, { duration: 200 });
   }, [menuOpen]);
-
-  const overlayStyle = useAnimatedStyle(() => ({
-    opacity: overlayOpacity.value,
-  }));
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -87,7 +82,8 @@ const BoardStackNavigator = () => {
           screenListeners={{
             state: (e) => {
               const route = e.data.state.routes[e.data.state.index];
-              setCurrentRoute(route.name);
+              const category = route.params?.category ?? 'POST';
+              setCurrentCategory(category);
             },
           }}
           screenOptions={{
@@ -104,47 +100,27 @@ const BoardStackNavigator = () => {
           }}
         >
           <Stack.Screen
-            name="BoardScreen"
-            options={{
+            name="BoardListScreen"
+            options={({ route }) => ({
+              title:
+                route?.params?.category === 'SHARE'
+                  ? '물건 나눔 게시판'
+                  : route?.params?.category === 'VOLUNTEER'
+                    ? '봉사 나눔 게시판'
+                    : '담소 나눔 게시판',
               headerLeft: () => (
-                <TouchableOpacity onPress={() => setMenuOpen(true)} hitSlop={{ top: 10, bottom: 10, left: 20, right: 20 }}>
+                <TouchableOpacity onPress={() => setMenuOpen(true)}>
                   <HeaderIcon><HambergerIcon /></HeaderIcon>
                 </TouchableOpacity>
               ),
-              title: '담소 나눔 게시판',
-            }}
+            })}
           >
             {(props) => {
               navRef.current = props.navigation;
-              return <BoardScreen {...props} />;
+              return <BoardListScreen {...props} />;
             }}
           </Stack.Screen>
 
-          <Stack.Screen
-            name="ItemBoardScreen"
-            component={ItemBoardScreen}
-            options={{
-              headerLeft: () => (
-                <TouchableOpacity onPress={() => setMenuOpen(true)} hitSlop={{ top: 10, bottom: 10, left: 20, right: 20 }}>
-                  <HeaderIcon><HambergerIcon /></HeaderIcon>
-                </TouchableOpacity>
-              ),
-              title: '물건 나눔 게시판',
-            }}
-          />
-
-          <Stack.Screen
-            name="VolunteerBoardScreen"
-            component={VolunteerBoardScreen}
-            options={{
-              headerLeft: () => (
-                <TouchableOpacity onPress={() => setMenuOpen(true)} hitSlop={{ top: 10, bottom: 10, left: 20, right: 20 }}>
-                  <HeaderIcon><HambergerIcon /></HeaderIcon>
-                </TouchableOpacity>
-              ),
-              title: '봉사 나눔 게시판',
-            }}
-          />
 
           <Stack.Screen
             name="BoardDetailScreen"
@@ -163,8 +139,6 @@ const BoardStackNavigator = () => {
             name="BoardWrite"
             component={BoardWriteScreen}
             options={{
-              headerLeft: () => <BackButton />,
-              title: '글쓰기',
               headerShown: false,
             }}
           />
@@ -188,13 +162,13 @@ const BoardStackNavigator = () => {
         <SideMenu
           isOpen={menuOpen}
           onClose={() => setMenuOpen(false)}
-          navigate={(screen) => {
+          navigate={(screen, params) => {
             navRef.current?.reset({
               index: 0,
-              routes: [{ name: screen }],
+              routes: [{ name: screen, params, key: `BoardListScreen-${params.category}`, }],
             });
           }}
-          currentRoute={currentRoute}
+          currentCategory={currentCategory}
         />
       </View>
     </GestureHandlerRootView>
@@ -203,7 +177,6 @@ const BoardStackNavigator = () => {
 
 export default BoardStackNavigator;
 
-// Styled Components
 const HeaderIcon = styled.View`
   margin-top: ${height * 0.02}px;
   margin-left: ${width * 0.08}px;
@@ -246,12 +219,6 @@ const DrawerItemButton = styled.TouchableOpacity`
 const DrawerItemLabel = styled.Text`
   font-size: 16px;
   font-family: 'NPSfont_bold';
-`;
-
-const Divider = styled.View`
-  height: 1px;
-  background-color: ${colors.gray200};
-  margin: 4px 20px;
 `;
 
 const CloseButton = styled.TouchableOpacity`
