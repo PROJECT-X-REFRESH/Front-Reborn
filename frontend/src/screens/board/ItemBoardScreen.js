@@ -4,7 +4,7 @@ import { fetchBoardList, fetchPopularBoards, fetchLikedBoards, BOARD_TYPE } from
 import styled from "styled-components/native";
 import { Dimensions, TouchableOpacity, FlatList, ScrollView } from "react-native";
 import colors from "../../constants/colors";
-import FeedItem from "./item/FeedItem";
+import FeedItem from "./items/FeedItem";
 import RecordWhiteIcon from '../../assets/images/others/record_white.svg';
 
 const { width, height } = Dimensions.get("window");
