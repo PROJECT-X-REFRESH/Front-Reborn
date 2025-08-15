@@ -1,7 +1,7 @@
-import { useState, useCallback } from 'react';
+import {useState, useCallback} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Keychain from 'react-native-keychain';
-import { get } from '../../../services/api';
+import {get} from '../../../services/api';
 import config from '../../../constants/config';
 import AnimalImages from '../../../components/AnimalImages';
 
@@ -17,7 +17,8 @@ export default function useHomeData() {
     rebornScreen: 'IntroOutroScreen',
   });
 
-  const saveSelectedPetId = id => AsyncStorage.setItem(SELECTED_PET_KEY, String(id));
+  const saveSelectedPetId = id =>
+    AsyncStorage.setItem(SELECTED_PET_KEY, String(id));
   const loadSelectedPetId = async () => {
     const id = await AsyncStorage.getItem(SELECTED_PET_KEY);
     return id ? parseInt(id, 10) : null;
@@ -29,15 +30,20 @@ export default function useHomeData() {
       const tokenObj = JSON.parse(accessData?.password);
       const accessToken = tokenObj.accessToken;
 
-      const res = await get(config[progress].VIEW(farewellId), {}, {
-        headers: { Authorization: `${accessToken}` },
-      });
+      const res = await get(
+        config[progress].VIEW(farewellId),
+        {},
+        {
+          headers: {Authorization: `${accessToken}`},
+        },
+      );
 
       if (!res?.isSuccess) return;
 
       if (progress === 'REBIRTH') {
         rebornFns.setProgress(res.result.nextStep);
-        if (res.result.nextStep === 'letter') rebornFns.setChooseRibbon(res.result.ribbon);
+        if (res.result.nextStep === 'letter')
+          rebornFns.setChooseRibbon(res.result.ribbon);
       } else {
         rebornFns.setIsFeed(res.result.feed);
         rebornFns.setIsWalk(res.result.walk);
@@ -69,7 +75,7 @@ export default function useHomeData() {
       fetchFarewellProgress(progress.toUpperCase(), farewellId, rebornFns);
     }
 
-    setState(prev => ({ ...prev, rebornScreen: screen }));
+    setState(prev => ({...prev, rebornScreen: screen}));
   };
 
   const fetchMain = useCallback(async (rebornFns, setPetId) => {
@@ -78,7 +84,7 @@ export default function useHomeData() {
       const petList = res.result.petList || [];
 
       const formattedPets = petList.map(p => ({
-        id: p.id,
+        id: p.id,z
         name: p.name,
         fstep: p.fstep,
         farewellId: p.farewellId,
@@ -92,7 +98,8 @@ export default function useHomeData() {
       }));
 
       const storedPetId = await loadSelectedPetId();
-      const currentPet = formattedPets.find(p => p.id === storedPetId) ?? formattedPets[0];
+      const currentPet =
+        formattedPets.find(p => p.id === storedPetId) ?? formattedPets[0];
 
       setState(prev => ({
         ...prev,
@@ -119,5 +126,5 @@ export default function useHomeData() {
     }
   }, []);
 
-  return { state, setState, fetchMain, saveSelectedPetId };
+  return {state, setState, fetchMain, saveSelectedPetId};
 }

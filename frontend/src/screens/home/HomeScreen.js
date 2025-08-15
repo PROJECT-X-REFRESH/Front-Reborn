@@ -1,10 +1,10 @@
-import React, { useRef, useContext } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
+import React, {useRef, useContext} from 'react';
+import {useFocusEffect} from '@react-navigation/native';
 import styled from 'styled-components/native';
-import { Dimensions } from 'react-native';
-import { Modalize } from 'react-native-modalize';
-import { PetContext } from '../../context/PetContext';
-import { useReborn } from './../../context/RebornContext';
+import {Dimensions} from 'react-native';
+import {Modalize} from 'react-native-modalize';
+import {PetContext} from '../../context/PetContext';
+import {useReborn} from './../../context/RebornContext';
 import useHomeData from './hooks/useHomeData';
 import PetProfile from './components/PetProfile';
 import PetActivitySection from './components/PetActivitySection';
@@ -13,26 +13,32 @@ import PetModalList from './components/PetModalList';
 import ChatbotButton from './components/ChatbotButton';
 import colors from '../../constants/colors';
 
-const { width, height } = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
-const HomeScreen = ({ navigation }) => {
+const HomeScreen = ({navigation}) => {
   const modalRef = useRef(null);
 
   // 각 컨텍스트에서 필요한 함수 가져오기
-  const { setPetId } = useContext(PetContext);
+  const {setPetId} = useContext(PetContext);
   const rebornFns = useReborn();
 
-  const { state, setState, fetchMain, saveSelectedPetId } = useHomeData();
+  const {state, setState, fetchMain, saveSelectedPetId} = useHomeData();
 
   // 화면 포커스 시 데이터 로딩
-  useFocusEffect(() => {
-    fetchMain(rebornFns, setPetId);
-  });
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('Home screen focused');
+      fetchMain(rebornFns, setPetId);
+    }, [setPetId, fetchMain]),
+  );
 
   return (
     <Container>
       {state.selectedPet && (
-        <PetProfile pet={state.selectedPet} onPress={() => modalRef.current?.open()} />
+        <PetProfile
+          pet={state.selectedPet}
+          onPress={() => modalRef.current?.open()}
+        />
       )}
 
       <PetActivitySection
@@ -48,7 +54,7 @@ const HomeScreen = ({ navigation }) => {
         <PetModalList
           pets={state.pets}
           onSelect={pet => {
-            setState(prev => ({ ...prev, selectedPet: pet }));
+            setState(prev => ({...prev, selectedPet: pet}));
             saveSelectedPetId(pet.id);
             modalRef.current?.close();
           }}
