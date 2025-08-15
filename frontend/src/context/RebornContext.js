@@ -1,4 +1,11 @@
-import React, {createContext, useContext, useState, useEffect} from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from 'react';
 
 const RebornContext = createContext();
 
@@ -71,25 +78,12 @@ export const RebornProvider = ({children}) => {
         isContents1 &&
         isContents2
       ) {
-        setIsWalk(false);
-        setIsFeed(false);
-        setIsSnack(false);
-        setIsWalk(false);
-        setIsContents1(false);
-        setIsContents2(false);
-        setIsAllClear(false);
-        setIsTimeToNext(false);
+        resetStates();
         return;
       }
     } else {
       if (isAllClear && isFeed && isWalk && isSnack && isContents1) {
-        setIsWalk(false);
-        setIsFeed(false);
-        setIsSnack(false);
-        setIsWalk(false);
-        setIsContents1(false);
-        setIsAllClear(false);
-        setIsTimeToNext(false);
+        resetStates();
         return;
       }
     }
@@ -103,7 +97,26 @@ export const RebornProvider = ({children}) => {
         setIsTimeToNext(true);
       }
     }
-  }, [progress, isFeed, isWalk, isSnack, isContents1, isContents2, isAllClear]);
+  }, [
+    progress,
+    isFeed,
+    isWalk,
+    isSnack,
+    isContents1,
+    isContents2,
+    isAllClear,
+    resetStates,
+  ]);
+
+  const resetStates = useCallback(() => {
+    setIsWalk(false);
+    setIsFeed(false);
+    setIsSnack(false);
+    setIsContents1(false);
+    setIsContents2(false);
+    setIsAllClear(false);
+    setIsTimeToNext(false);
+  }, []);
 
   const ResetRebornContext = () => {
     setProgress('intro');
@@ -119,39 +132,55 @@ export const RebornProvider = ({children}) => {
     setIsContents2(false);
   };
 
+  const value = useMemo(
+    () => ({
+      progress,
+      setProgress,
+      fstep,
+      setFstep,
+      farewellId,
+      setFarewellId,
+      petName,
+      setPetName,
+      isWalk,
+      setIsWalk,
+      isFeed,
+      setIsFeed,
+      isSnack,
+      setIsSnack,
+      isContents1,
+      setIsContents1,
+      isContents2,
+      setIsContents2,
+      setIsAllClear,
+      isTimeToNext,
+      setIsTimeToNext,
+      ResetRebornContext,
+      petColor,
+      setPetColor,
+      petCase,
+      setPetCase,
+      chooseRibbon,
+      setChooseRibbon,
+    }),
+    [
+      progress,
+      fstep,
+      farewellId,
+      petName,
+      isWalk,
+      isFeed,
+      isSnack,
+      isContents1,
+      isContents2,
+      isTimeToNext,
+      petColor,
+      petCase,
+      chooseRibbon,
+    ],
+  );
+
   return (
-    <RebornContext.Provider
-      value={{
-        progress,
-        setProgress,
-        fstep,
-        setFstep,
-        farewellId,
-        setFarewellId,
-        petName,
-        setPetName,
-        isWalk,
-        setIsWalk,
-        isFeed,
-        setIsFeed,
-        isSnack,
-        setIsSnack,
-        isContents1,
-        setIsContents1,
-        isContents2,
-        setIsContents2,
-        setIsAllClear,
-        isTimeToNext,
-        setIsTimeToNext,
-        ResetRebornContext,
-        petColor,
-        setPetColor,
-        petCase,
-        setPetCase,
-        chooseRibbon,
-        setChooseRibbon,
-      }}>
-      {children}
-    </RebornContext.Provider>
+    <RebornContext.Provider value={value}>{children}</RebornContext.Provider>
   );
 };
