@@ -27,7 +27,6 @@ const HomeScreen = ({navigation}) => {
   // 화면 포커스 시 데이터 로딩
   useFocusEffect(
     React.useCallback(() => {
-      console.log('Home screen focused');
       fetchMain(rebornFns, setPetId);
     }, [setPetId, fetchMain]),
   );

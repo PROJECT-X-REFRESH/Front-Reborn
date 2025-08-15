@@ -84,7 +84,7 @@ export default function useHomeData() {
       const petList = res.result.petList || [];
 
       const formattedPets = petList.map(p => ({
-        id: p.id,z
+        id: p.id,
         name: p.name,
         fstep: p.fstep,
         farewellId: p.farewellId,
