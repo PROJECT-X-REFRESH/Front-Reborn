@@ -66,8 +66,7 @@ const Container = styled.TouchableOpacity`
 const ContentsWrapper = styled.View`
   display: flex;
   flex-direction: row;
-  width: fit-content;
-  min-width: ${width * 0.86};
+  width: ${width * 0.86};
   height: fit-content;
   align-items: center;
   gap: 16px;
@@ -106,7 +105,8 @@ const ContentsYellowText = styled.Text`
 const ContentsText = styled.Text`
   font-family: 'NPSfont_bold';
   color: ${colors.brown};
-  font-size: ${width * 0.034};
+  font-size: ${width * 0.032};
+  flex: 1;
 `;
 
 export default ContentsBox;

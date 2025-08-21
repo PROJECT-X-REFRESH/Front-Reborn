@@ -8,13 +8,19 @@ import CloudIcon from '../../assets/images/others/cloud.svg';
 import RainIcon from '../../assets/images/others/rain.svg';
 import colors from '../../constants/colors';
 
-const {width, height} = Dimensions.get('window');
+const {width} = Dimensions.get('window');
+
+/** 내부 여백(컨테이너 margin+padding)을 감안해 칸 폭 계산 */
+const CONTAINER_SIDE_MARGIN = 20; // CalendarContainer margin
+const CONTAINER_PADDING = 10; // CalendarContainer padding
+const INNER_WIDTH = width - (CONTAINER_SIDE_MARGIN + CONTAINER_PADDING) * 2;
+const CELL = Math.floor(INNER_WIDTH / 7); // 요일/날짜 칸 너비
 
 const MemoryCalendar = ({
   selectedDate,
-  emotionData,
-  remindData,
-  recordData,
+  emotionData = {},
+  remindData = [],
+  recordData = {},
   onSelectDate,
 }) => {
   const [currentWeek, setCurrentWeek] = useState([]);
@@ -84,15 +90,17 @@ const MemoryCalendar = ({
               <WeatherWrapper>
                 {dateStr && renderWeatherIcon(dateStr)}
               </WeatherWrapper>
+
               <TouchableOpacity
-                onPress={() => date && onSelectDate(date)}
+                onPress={() => date && onSelectDate?.(date)}
                 disabled={!date}>
-                <DateCircle isToday={date && isToday(date)}>
-                  <DateText isToday={date && isToday(date)} dayIndex={i}>
+                <DateCircle isToday={!!date && isToday(date)}>
+                  <DateText isToday={!!date && isToday(date)} dayIndex={i}>
                     {date ? date.getDate() : ''}
                   </DateText>
                 </DateCircle>
               </TouchableOpacity>
+
               {dateStr && remindData.includes(dateStr) && <Dot />}
             </DateCell>
           );
@@ -108,13 +116,10 @@ function getWeeksOfMonth(year, month) {
 
   const firstDay = new Date(year, month, 1);
   const startDayOfWeek = firstDay.getDay(); // 0 (일) ~ 6 (토)
-
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  // 이전 달 날짜 채우기 (정확하게 "빈칸"을 null로 넣는 게 더 명확)
-  for (let i = 0; i < startDayOfWeek; i++) {
-    week.push(null);
-  }
+  // 이전 달 빈칸(null)
+  for (let i = 0; i < startDayOfWeek; i++) week.push(null);
 
   // 이번 달 날짜 채우기
   for (let d = 1; d <= daysInMonth; d++) {
@@ -126,11 +131,9 @@ function getWeeksOfMonth(year, month) {
     }
   }
 
-  // 마지막 주가 7일이 안 되면 빈 칸(null)으로 채움
+  // 마지막 주 빈칸(null) 채우기
   if (week.length > 0) {
-    while (week.length < 7) {
-      week.push(null);
-    }
+    while (week.length < 7) week.push(null);
     weeks.push(week);
   }
 
@@ -164,7 +167,7 @@ const WeekDays = styled.View`
 `;
 
 const WeekDay = styled(NpsBText)`
-  width: 32px;
+  width: ${CELL}px;
   text-align: center;
   color: ${({dayIndex}) =>
     dayIndex === 0 ? colors.red : dayIndex === 6 ? colors.blue : colors.brown};
@@ -178,7 +181,7 @@ const WeekRow = styled.View`
 
 const DateCell = styled.View`
   align-items: center;
-  width: 32px;
+  width: ${CELL}px;
 `;
 
 const WeatherWrapper = styled.View`
@@ -187,10 +190,11 @@ const WeatherWrapper = styled.View`
 
 const DateCircle = styled.View`
   background-color: ${({isToday}) => (isToday ? colors.yellow : 'transparent')};
-  border-radius: 100px;
-  padding: 6px;
-  width: 30px;
-  height: 30px;
+  width: ${CELL - 2}px;
+  height: ${CELL - 2}px;
+  border-radius: ${(CELL - 2) / 2}px;
+  align-items: center;
+  justify-content: center;
 `;
 
 const DateText = styled(NpsText)`
